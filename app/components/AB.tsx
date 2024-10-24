@@ -10,16 +10,16 @@ const bekkiCards = ['2', '4', '6', '8', '10', 'Q'];
 const allCards = [...ekkiCards, ...bekkiCards];
 
 // Predefined bet amounts
-const betOptions = [10, 20, 30, 40, 50, 100];
+const betOptions = [10, 20, 30, 40, 50];
 
 const AkiBeki = () => {
     const [balance, setBalance] = useState<number>(100); // Player's balance
-    const [currentCard, setCurrentCard] = useState<string>(''); // Random card display
+    const [currentCard, setCurrentCard] = useState<string>(getRandomCard()); // Random card display
     const [resultMessage, setResultMessage] = useState<string>(''); // Result message (Win or Lose)
     const [timeLeft, setTimeLeft] = useState<number>(10); // Timer countdown (10 seconds)
+    const [gameActive, setGameActive] = useState<boolean>(true); // Is the game still active?
     const [betAmount, setBetAmount] = useState<number | null>(null); // Player's bet amount
     const [playerGuess, setPlayerGuess] = useState<'ekki' | 'bekki' | null>(null); // Stores player's guess
-    const [gameActive, setGameActive] = useState<boolean>(false); // Is the game currently active?
 
     // Load the game state from localStorage on component mount
     useEffect(() => {
@@ -27,45 +27,41 @@ const AkiBeki = () => {
         if (savedState) {
             const gameState = JSON.parse(savedState);
             setBalance(gameState.balance);
+            setCurrentCard(gameState.currentCard);
+            setTimeLeft(gameState.timeLeft);
+            setGameActive(gameState.gameActive);
+            setBetAmount(gameState.betAmount);
+            setPlayerGuess(gameState.playerGuess);
+            setResultMessage(gameState.resultMessage);
         }
     }, []);
 
     // Save the game state to localStorage whenever it changes
     useEffect(() => {
-        const gameState = { balance };
+        const gameState = {
+            balance,
+            currentCard,
+            timeLeft,
+            gameActive,
+            betAmount,
+            playerGuess,
+            resultMessage,
+        };
         localStorage.setItem('akibeki-game-state', JSON.stringify(gameState));
-    }, [balance]);
+    }, [balance, currentCard, timeLeft, gameActive, betAmount, playerGuess, resultMessage]);
 
     // Function to get a random card
-    const getRandomCard = () => {
+    function getRandomCard() {
         const randomIndex = Math.floor(Math.random() * allCards.length);
         return allCards[randomIndex];
-    };
-
-    // Function to start a new round
-    const startNewRound = () => {
-        setCurrentCard(getRandomCard()); // Display a new card
-        setTimeLeft(10); // Reset the timer
-        setResultMessage(''); // Clear the result message
-        setPlayerGuess(null); // Clear the player's guess
-        setBetAmount(null); // Reset bet amount for the new round
-        setGameActive(true); // Start the game
-    };
+    }
 
     // Function to evaluate the result after the timer ends
     const evaluateResult = () => {
-        if (playerGuess === null) {
-            setResultMessage(`Time's up! The card was ${currentCard}. No guess made.`);
-            // Resetting state directly instead of calling a non-existent function
-            resetGameState();
-            return; // Ensure a guess was made
-        }
-
         const isEkki = ekkiCards.includes(currentCard);
         const isBekki = bekkiCards.includes(currentCard);
 
-        // Update balance based on player's guess
-        if ((playerGuess === 'ekki' && isEkki) || (playerGuess === 'bekki' && isBekki)) {
+        if (playerGuess === 'ekki' && isEkki || playerGuess === 'bekki' && isBekki) {
             setBalance((prev) => Math.min(prev + (betAmount as number), 9999)); // Add bet amount on correct guess
             setResultMessage(`You Win! The card was ${currentCard}. You earned ${betAmount}.`);
         } else {
@@ -78,34 +74,32 @@ const AkiBeki = () => {
             alert('Your balance is zero. Please deposit to continue playing.');
         }
 
-        resetGameState(); // Start a new round after evaluation
+        resetRound(); // Start a new round after evaluation
     };
 
-    // Function to reset the game state for the next round
-    const resetGameState = () => {
-        setCurrentCard(''); // Clear the current card
-        setTimeLeft(10); // Reset the timer for the next round
-        setResultMessage(''); // Clear the result message
-        setPlayerGuess(null); // Clear the player's guess
-        setBetAmount(null); // Reset the bet amount
-        setGameActive(true); // Set game active for new round
+    // Reset the round after guess or timer expiration
+    const resetRound = () => {
+        setTimeout(() => {
+            setCurrentCard(getRandomCard()); // Display a new card
+            setTimeLeft(10); // Reset the timer
+            setPlayerGuess(null); // Clear the player's guess
+            setGameActive(true); // Enable guessing for the new round
+            setResultMessage(''); // Clear the result message
+            setBetAmount(null); // Reset bet amount after round
+        }, 1000); // 1-second delay before resetting the round
     };
 
     // Timer countdown logic using useEffect
     useEffect(() => {
-        let timer: NodeJS.Timeout;
-
-        if (gameActive && timeLeft > 0) {
-            timer = setTimeout(() => {
-                setTimeLeft((prev) => prev - 1);
-            }, 1000);
-        }
-
         if (timeLeft === 0) {
-            evaluateResult(); // Evaluate result when time is up
-        }
+            evaluateResult();
+        } else if (gameActive) {
+            const timer = setTimeout(() => {
+                setTimeLeft(timeLeft - 1);
+            }, 1000);
 
-        return () => clearTimeout(timer); // Cleanup timer on component unmount
+            return () => clearTimeout(timer); // Cleanup timer on component unmount
+        }
     }, [timeLeft, gameActive]);
 
     // Function to handle the player's guess
@@ -134,32 +128,36 @@ const AkiBeki = () => {
             </div>
 
             <div className="text-2xl mb-4 text-gray-700">Time Left: {timeLeft} seconds</div>
-
             <div className="flex space-x-4 mb-4">
                 {betOptions.map((option) => (
                     <button
                         key={option}
-                        className={`bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-300 ${betAmount === option ? 'bg-gray-500 text-white' : 'hover:bg-gray-400'}`}
+                        className={`bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-300 ${betAmount === option ? 'bg-gray-500 text-white' : 'hover:bg-gray-400'
+                            }`}
                         onClick={() => setBetAmount(option)}
-                        disabled={playerGuess !== null || balance <= 0} // Disable betting if a guess is made or balance is zero
+                        disabled={!gameActive} // Disable bet selection after the bet is placed
                     >
                         {option}
                     </button>
                 ))}
             </div>
 
-            <div className="flex space-x-6 mb-4">
+            <div className="flex space-x-6">
                 <button
-                    className={`bg-red-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-red-600 transition duration-300 ${(!gameActive || balance === 0 || betAmount === null) && 'opacity-50 cursor-not-allowed'}`}
+                    className={`bg-red-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-red-600 transition duration-300 ${(!gameActive || balance === 0 || betAmount === null) &&
+                        'opacity-50 cursor-not-allowed'
+                        }`}
                     onClick={() => handleGuess('ekki')}
-                    disabled={!gameActive || balance === 0 || betAmount === null || playerGuess !== null} // Disable if a guess is made
+                    disabled={!gameActive || balance === 0 || betAmount === null}
                 >
                     Ekki
                 </button>
                 <button
-                    className={`bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300 ${(!gameActive || balance === 0 || betAmount === null) && 'opacity-50 cursor-not-allowed'}`}
+                    className={`bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300 ${(!gameActive || balance === 0 || betAmount === null) &&
+                        'opacity-50 cursor-not-allowed'
+                        }`}
                     onClick={() => handleGuess('bekki')}
-                    disabled={!gameActive || balance === 0 || betAmount === null || playerGuess !== null} // Disable if a guess is made
+                    disabled={!gameActive || balance === 0 || betAmount === null}
                 >
                     Bekki
                 </button>
@@ -167,13 +165,19 @@ const AkiBeki = () => {
 
             <button
                 className="mt-10 bg-green-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-green-600 transition duration-300"
-                onClick={startNewRound}
-                disabled={balance === 0} // Disable starting a new round if balance is zero
+                onClick={resetRound}
+                disabled={balance === 0} // Disable reset if balance is zero
             >
-                Start New Round
+                Reset Game
             </button>
         </div>
     );
 };
+
+// Helper function to get a random card
+function getRandomCard() {
+    const randomIndex = Math.floor(Math.random() * allCards.length);
+    return allCards[randomIndex];
+}
 
 export default AkiBeki;
