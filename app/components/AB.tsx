@@ -59,24 +59,24 @@ const AkiBeki = () => {
     // Function to evaluate the result after the timer ends
     const evaluateResult = () => {
         if (playerGuess === null) {
-            setResultMessage(`Time's up! ${currentCard}`);
+            setResultMessage(`Time's up! The card was ${currentCard}. No guess made.`);
             return; // Ensure a guess was made
         }
 
         const isEkki = ekkiCards.includes(currentCard);
         const isBekki = bekkiCards.includes(currentCard);
 
-        if (playerGuess === 'ekki' && isEkki || playerGuess === 'bekki' && isBekki) {
+        if ((playerGuess === 'ekki' && isEkki) || (playerGuess === 'bekki' && isBekki)) {
             setBalance((prev) => Math.min(prev + (betAmount as number), 9999)); // Add bet amount on correct guess
-            setResultMessage(`You Win! ${currentCard}.+ ${betAmount}.`);
+            setResultMessage(`You Win! The card was ${currentCard}. You earned ${betAmount}.`);
         } else {
             setBalance((prev) => Math.max(prev - (betAmount as number), 0)); // Deduct bet amount on incorrect guess
-            setResultMessage(`You Lose! ${currentCard}. - ${betAmount}.`);
+            setResultMessage(`You Lose! The card was ${currentCard}. You lost ${betAmount}.`);
         }
 
         // Check if balance is zero and prompt for deposit
         if (balance <= 0) {
-            alert('Please Deposit');
+            alert('Your balance is zero. Please deposit to continue playing.');
         }
 
         resetRound(); // Start a new round after evaluation
@@ -96,17 +96,17 @@ const AkiBeki = () => {
 
     // Timer countdown logic using useEffect
     useEffect(() => {
-        if (timeLeft === 0) {
-            // Evaluate the result once the timer reaches 0
-            evaluateResult();
-        } else if (gameActive) {
-            const timer = setTimeout(() => {
-                setTimeLeft(timeLeft - 1);
-            }, 1000);
+        const timer = setInterval(() => {
+            if (timeLeft > 0) {
+                setTimeLeft((prev) => prev - 1);
+            } else {
+                clearInterval(timer);
+                evaluateResult(); // Evaluate the result once the timer reaches 0
+            }
+        }, 1000);
 
-            return () => clearTimeout(timer); // Cleanup timer on component unmount
-        }
-    }, [timeLeft, gameActive]);
+        return () => clearInterval(timer); // Cleanup timer on component unmount
+    }, [timeLeft]);
 
     // Function to handle the player's guess
     const handleGuess = (guess: 'ekki' | 'bekki') => {
@@ -188,5 +188,3 @@ function getRandomCard() {
 }
 
 export default AkiBeki;
-
-
