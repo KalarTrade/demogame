@@ -142,7 +142,7 @@ const AkiBeki = () => {
                 <h3>{resultMessage ? resultMessage : 'Make your guess!'}</h3>
             </div>
 
-            <div className="text-2xl mb-4 text-gray-700">
+            <div className="text-2xl mb-4 text-gray-100">
                 Time Left: {timeLeft} seconds
             </div>
 
