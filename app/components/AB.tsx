@@ -134,7 +134,7 @@ const AkiBeki = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex flex-col items-center justify-center min-h-screen">
             <h1 className="text-5xl font-bold mb-6 text-blue-600 animate-bounce">Ekki & Bekki</h1>
             <h2 className="text-3xl mb-4 text-gray-800">Balance: ${balance}</h2>
 
