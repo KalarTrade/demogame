@@ -60,7 +60,7 @@ const AkiBeki = () => {
     const evaluateResult = () => {
         setIsTimerActive(false); // Disable timer
         if (playerGuess === null) {
-            setResultMessage(`Time's up! The card was ${currentCard}. No guess made.`);
+            setResultMessage(`Round Ends: ${currentCard}`);
             resetRound(); // Reset for the next round
             return; // Ensure a guess was made
         }
@@ -70,10 +70,10 @@ const AkiBeki = () => {
 
         if ((playerGuess === 'ekki' && isEkki) || (playerGuess === 'bekki' && isBekki)) {
             setBalance((prev) => Math.min(prev + (betAmount as number), 9999)); // Add bet amount on correct guess
-            setResultMessage(`You Win! The card was ${currentCard}. You earned ${betAmount}.`);
+            setResultMessage(`Win ${currentCard} + ${betAmount}.`);
         } else {
             setBalance((prev) => Math.max(prev - (betAmount as number), 0)); // Deduct bet amount on incorrect guess
-            setResultMessage(`You Lose! The card was ${currentCard}. You lost ${betAmount}.`);
+            setResultMessage(`Lose ${currentCard} - ${betAmount}.`);
         }
 
         // Check if balance is zero and prompt for deposit
