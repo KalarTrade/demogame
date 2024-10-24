@@ -129,11 +129,11 @@ const AkiBeki = () => {
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
             <h1 className="text-4xl font-bold mb-6">Ekki & Bekki</h1>
             <h2 className="text-2xl mb-4 text-gray-800">Balance: {balance}</h2>
-
+    
             <div className="text-xl font-bold mb-4">
                 <h3>{resultMessage ? resultMessage : 'Make your guess!'}</h3>
             </div>
-
+    
             <div className="text-2xl mb-4 text-gray-700">Time Left: {timeLeft} seconds</div>
             <div className="flex space-x-4 mb-4">
                 {betOptions.map((option) => (
@@ -148,7 +148,7 @@ const AkiBeki = () => {
                     </button>
                 ))}
             </div>
-
+    
             <div className="flex space-x-6">
                 <button
                     className={`bg-red-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-red-600 transition duration-300 ${(!gameActive || balance === 0 || betAmount === null) &&
@@ -169,7 +169,7 @@ const AkiBeki = () => {
                     Bekki
                 </button>
             </div>
-
+    
             <button
                 className="mt-10 bg-green-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-green-600 transition duration-300"
                 onClick={resetRound}
@@ -179,6 +179,7 @@ const AkiBeki = () => {
             </button>
         </div>
     );
+    
 };
 
 // Helper function to get a random card
