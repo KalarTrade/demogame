@@ -23,14 +23,21 @@ const AkiBeki = () => {
 
     // Effect to handle timer countdown
     useEffect(() => {
+        let timer: NodeJS.Timeout | null = null;
+
         if (isTimerActive && timeLeft > 0) {
-            const timer = setTimeout(() => {
+            timer = setTimeout(() => {
                 setTimeLeft((prev) => prev - 1);
             }, 1000);
-            return () => clearTimeout(timer); // Cleanup timer on component unmount
         } else if (timeLeft === 0) {
             evaluateResult(); // Evaluate result when timer ends
         }
+
+        return () => {
+            if (timer) {
+                clearTimeout(timer); // Cleanup timer on component unmount
+            }
+        };
     }, [timeLeft, isTimerActive]);
 
     // Start a new round
@@ -38,16 +45,16 @@ const AkiBeki = () => {
         setCurrentCard(getRandomCard()); // Display a new card
         setTimeLeft(10); // Reset the timer
         setPlayerGuess(null); // Clear the player's guess
-        setIsTimerActive(true); // Enable timer
         setBetAmount(null); // Reset bet amount
         setResultMessage(''); // Clear the result message
+        setIsTimerActive(true); // Enable timer
     };
 
     // Function to get a random card
-    function getRandomCard() {
+    const getRandomCard = () => {
         const randomIndex = Math.floor(Math.random() * allCards.length);
         return allCards[randomIndex];
-    }
+    };
 
     // Function to evaluate the result after the timer ends
     const evaluateResult = () => {
@@ -144,9 +151,13 @@ const AkiBeki = () => {
                     Bekki
                 </button>
             </div>
+
+            {/* Button to start the new round for testing purposes */}
+            <button onClick={startNewRound} className="mt-4 bg-green-500 text-white py-2 px-4 rounded">
+                Start New Round
+            </button>
         </div>
     );
 };
 
 export default AkiBeki;
-
