@@ -19,12 +19,29 @@ const AkiBeki = () => {
     const [timeLeft, setTimeLeft] = useState<number>(10); // Timer countdown (10 seconds)
     const [betAmount, setBetAmount] = useState<number | null>(null); // Player's bet amount
     const [playerGuess, setPlayerGuess] = useState<'ekki' | 'bekki' | null>(null); // Stores player's guess
-    const [gameActive, setGameActive] = useState<boolean>(false); // Is the game active?
+    const [isTimerActive, setIsTimerActive] = useState<boolean>(false); // Is the timer active?
 
+    // Effect to handle timer countdown
     useEffect(() => {
-        // Start a new round when the component mounts
-        startNewRound();
-    }, []);
+        if (isTimerActive && timeLeft > 0) {
+            const timer = setTimeout(() => {
+                setTimeLeft((prev) => prev - 1);
+            }, 1000);
+            return () => clearTimeout(timer); // Cleanup timer on component unmount
+        } else if (timeLeft === 0) {
+            evaluateResult(); // Evaluate result when timer ends
+        }
+    }, [timeLeft, isTimerActive]);
+
+    // Start a new round
+    const startNewRound = () => {
+        setCurrentCard(getRandomCard()); // Display a new card
+        setTimeLeft(10); // Reset the timer
+        setPlayerGuess(null); // Clear the player's guess
+        setIsTimerActive(true); // Enable timer
+        setBetAmount(null); // Reset bet amount
+        setResultMessage(''); // Clear the result message
+    };
 
     // Function to get a random card
     function getRandomCard() {
@@ -32,21 +49,9 @@ const AkiBeki = () => {
         return allCards[randomIndex];
     }
 
-    // Function to handle timer countdown
-    useEffect(() => {
-        if (timeLeft === 0) {
-            evaluateResult(); // Evaluate result when timer ends
-        } else if (gameActive) {
-            const timer = setTimeout(() => {
-                setTimeLeft((prev) => prev - 1);
-            }, 1000);
-
-            return () => clearTimeout(timer); // Cleanup timer on component unmount
-        }
-    }, [timeLeft, gameActive]);
-
     // Function to evaluate the result after the timer ends
     const evaluateResult = () => {
+        setIsTimerActive(false); // Disable timer
         if (playerGuess === null) {
             setResultMessage(`Time's up! The card was ${currentCard}. No guess made.`);
             resetRound(); // Reset for the next round
@@ -72,19 +77,8 @@ const AkiBeki = () => {
         resetRound(); // Start a new round after evaluation
     };
 
-    // Start a new round
-    const startNewRound = () => {
-        setCurrentCard(getRandomCard()); // Display a new card
-        setTimeLeft(10); // Reset the timer
-        setPlayerGuess(null); // Clear the player's guess
-        setGameActive(true); // Enable guessing for the new round
-        setBetAmount(null); // Reset bet amount
-        setResultMessage(''); // Clear the result message
-    };
-
     // Reset the round after guess or timer expiration
     const resetRound = () => {
-        // Prepare for the next round
         setTimeout(() => {
             startNewRound(); // Start a new round
         }, 1000); // 1-second delay before resetting the round
@@ -104,7 +98,6 @@ const AkiBeki = () => {
         }
 
         setPlayerGuess(guess); // Store the player's guess
-        setGameActive(false); // Disable further guessing until the round ends
     };
 
     return (
@@ -133,20 +126,20 @@ const AkiBeki = () => {
 
             <div className="flex space-x-6 mb-4">
                 <button
-                    className={`bg-red-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-red-600 transition duration-300 ${(!gameActive || balance === 0 || betAmount === null) &&
+                    className={`bg-red-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-red-600 transition duration-300 ${(!isTimerActive || balance === 0 || betAmount === null) &&
                         'opacity-50 cursor-not-allowed'
                         }`}
                     onClick={() => handleGuess('ekki')}
-                    disabled={!gameActive || balance === 0 || betAmount === null}
+                    disabled={!isTimerActive || balance === 0 || betAmount === null}
                 >
                     Ekki
                 </button>
                 <button
-                    className={`bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300 ${(!gameActive || balance === 0 || betAmount === null) &&
+                    className={`bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300 ${(!isTimerActive || balance === 0 || betAmount === null) &&
                         'opacity-50 cursor-not-allowed'
                         }`}
                     onClick={() => handleGuess('bekki')}
-                    disabled={!gameActive || balance === 0 || betAmount === null}
+                    disabled={!isTimerActive || balance === 0 || betAmount === null}
                 >
                     Bekki
                 </button>
@@ -156,3 +149,4 @@ const AkiBeki = () => {
 };
 
 export default AkiBeki;
+
