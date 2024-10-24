@@ -78,6 +78,7 @@ const AkiBeki = () => {
         setTimeLeft(10); // Reset the timer
         setPlayerGuess(null); // Clear the player's guess
         setGameActive(true); // Enable guessing for the new round
+        setBetAmount(null); // Reset bet amount
         setResultMessage(''); // Clear the result message
     };
 
