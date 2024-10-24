@@ -16,7 +16,7 @@ const AkiBeki = () => {
     const [balance, setBalance] = useState<number>(100); // Player's balance
     const [currentCard, setCurrentCard] = useState<string>(''); // Random card display
     const [resultMessage, setResultMessage] = useState<string>(''); // Result message (Win or Lose)
-    const [timeLeft, setTimeLeft] = useState<number>(10); // Timer countdown (10 seconds)
+    const [timeLeft, setTimeLeft] = useState<number>(30); // Timer countdown (30 seconds)
     const [betAmount, setBetAmount] = useState<number | null>(null); // Player's bet amount
     const [playerGuess, setPlayerGuess] = useState<'ekki' | 'bekki' | null>(null); // Stores player's guess
     const [isTimerActive, setIsTimerActive] = useState<boolean>(false); // Is the timer active?
@@ -43,7 +43,7 @@ const AkiBeki = () => {
     // Start a new round
     const startNewRound = () => {
         setCurrentCard(getRandomCard()); // Display a new card
-        setTimeLeft(10); // Reset the timer
+        setTimeLeft(30); // Reset the timer to 30 seconds
         setPlayerGuess(null); // Clear the player's guess
         setBetAmount(null); // Reset bet amount
         setResultMessage(''); // Clear the result message
@@ -161,3 +161,4 @@ const AkiBeki = () => {
 };
 
 export default AkiBeki;
+
