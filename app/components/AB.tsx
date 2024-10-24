@@ -56,7 +56,8 @@ const AkiBeki = () => {
     const evaluateResult = () => {
         if (playerGuess === null) {
             setResultMessage(`Time's up! The card was ${currentCard}. No guess made.`);
-            resetRound();
+            // Resetting state directly instead of calling a non-existent function
+            resetGameState();
             return; // Ensure a guess was made
         }
 
@@ -77,7 +78,17 @@ const AkiBeki = () => {
             alert('Your balance is zero. Please deposit to continue playing.');
         }
 
-        resetRound(); // Start a new round after evaluation
+        resetGameState(); // Start a new round after evaluation
+    };
+
+    // Function to reset the game state for the next round
+    const resetGameState = () => {
+        setCurrentCard(''); // Clear the current card
+        setTimeLeft(10); // Reset the timer for the next round
+        setResultMessage(''); // Clear the result message
+        setPlayerGuess(null); // Clear the player's guess
+        setBetAmount(null); // Reset the bet amount
+        setGameActive(true); // Set game active for new round
     };
 
     // Timer countdown logic using useEffect
